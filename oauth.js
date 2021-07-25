@@ -1,11 +1,7 @@
 window.onload = function() {
     document.querySelector('button').addEventListener('click', function() {
 
-        chrome.tabs.query({}, tabs => {
-            tabs.forEach(tab => {
-            chrome.tabs.sendMessage(tab.id, 'hey');
-          });
-        });
+
         chrome.identity.getAuthToken({interactive: true}, function(token) {
           let init = {
             method: 'POST',
@@ -24,8 +20,11 @@ window.onload = function() {
               init)
               .then((response) => response.json())
               .then(function(data) {
-
-                console.log(data); 
+                chrome.tabs.query({}, tabs => {
+                  tabs.forEach(tab => {
+                  chrome.tabs.sendMessage(tab.id, data.id);
+                });
+              });
               });
         });
 
@@ -46,7 +45,7 @@ window.onload = function() {
 
     }
 
-    const sendEvents = ()=>{
+    const sendEvents = (event, id)=>{
       chrome.identity.getAuthToken({interactive: true}, function(token) {
         let init = {
           method: 'POST',
@@ -55,25 +54,26 @@ window.onload = function() {
             Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'
           },
-          body:{
-              "summary": 'This worked'
-          },
+          body: JSON.stringify(event),
           'contentType': 'json'
         };
         fetch(
-            'https://www.googleapis.com/calendar/v3/users/me/calendarList',
+            'https://www.googleapis.com/calendar/v3/calendars/'+ id+ '/events',
             init)
             .then((response) => response.json())
             .then(function(data) {
 
-              return data; 
+              console.log(data); 
             });
       });
     }
 
     chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         var ten = 100
-         //sendEvents();
+         //sendEvents()
+         message['data']['data'].forEach(e =>{
+          sendEvents(e, response['data']['id'])
+         })
         sendResponse({
             data: message
         }); 

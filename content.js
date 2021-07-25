@@ -4,7 +4,8 @@ chrome.runtime.onMessage.addListener(msgObj => {
     var sch = scrapePage();
     
     chrome.runtime.sendMessage({
-        data: sch
+        data: sch,
+        id:msgObj
     }, function (response) {
         console.log(response)
     });
