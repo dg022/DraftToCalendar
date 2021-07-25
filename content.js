@@ -16,11 +16,40 @@ chrome.runtime.onMessage.addListener(msgObj => {
 
     const nextWeekdayDate = (date, day_in_week) => {
 
-        var ret = new DateTime(date||new DateTime());
+        var ret = new Date(date||new Date());
         ret.setDate(ret.getDate() + (day_in_week - 1 - ret.getDay() + 7) % 7 + 1);
         return ret;
   
   
+    }
+
+
+    const reoccurenceStrings = new Object()
+    reoccurenceStrings['08-December-2021'] = '20211208T000000Z'
+    reoccurenceStrings['01-April-2022'] = '20220401T000000Z'
+
+    const createReccurenceString = (Until, Days)=>{
+
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=SU,MO,TU,WE,TH,FR,SA;UNTIL=20220401T000000Z'
+        return  'FREQ=WEEKLY;INTERVAL=1;BYDAY='+Days+';UNTIL='+Until
+
+    }
+
+    const returnDaysString = (arr) =>{
+        const daysConversion = new Object()
+        daysConversion['M'] = 'MO'
+        daysConversion['Tu'] = 'TU'
+        daysConversion['W'] = 'WE'
+        daysConversion['Th'] = 'TH'
+        daysConversion['F'] = 'FR'
+        days = []
+        for(var i = 0; i < arr.length; i++){
+
+         days.push( daysConversion[arr[i][0]])
+    
+        }
+        return days.toString()
+    
     }
 
     function convertTo24Hour(time) {
@@ -34,6 +63,18 @@ chrome.runtime.onMessage.addListener(msgObj => {
         return time.replace(/(AM|PM)/,'').trim();
     }
 
+
+
+    const dayOfTheWeek = new Object()
+    dayOfTheWeek['M'] = 1
+    dayOfTheWeek['Tu'] = 2
+    dayOfTheWeek['W'] = 3
+    dayOfTheWeek['Th'] = 4
+    dayOfTheWeek['F'] = 5
+
+
+const createEventStrings = (termBeginandEnd, event)=>{
+  
     const date = new Object()
     date['January'] = '01'
     date['February'] = '02'
@@ -48,53 +89,73 @@ chrome.runtime.onMessage.addListener(msgObj => {
     date['November'] = '11'
     date['December'] = '12'
 
-    const dayOfTheWeek = new Object()
-    dayOfTheWeek['M'] = 1
-    dayOfTheWeek['Tu'] = 2
-    dayOfTheWeek['W'] = 3
-    dayOfTheWeek['Th'] = 4
-    dayOfTheWeek['F'] = 5
-
-    const finalEventObjects = []
-
-const createEventStrings = (termBeginandEnd, event)=>{
+    var ev = []
     
     for(const DateTime in date){
-        if(termBeginandEnd[0].trim().includes(DateTime)){
+
+       
+        if( DateTime && termBeginandEnd[0].trim().includes(DateTime)){
+            
             //Given the start day of the term, this will spit out the first class for this course. 
             //I need a list of the days in which it repeats. 
 
             var nextDay = nextWeekdayDate(new Date(termBeginandEnd[0].trim().replace(DateTime, date[DateTime]).split("-").reverse().join("-") + " EST"), dayOfTheWeek[event['dayTimeNumber'][0][0]] )
-            var timeConversion  = convertTo24Hour(event['dayTimeNumber'][0][1]).split(':');
-            nextDay.setHours(timeConversion[0], timeConversion[1]);
-            event['classBegin'] =  nextDay.toISOString()
+            var proccesedTime = event['dayTimeNumber'][0][1].split(' -  ')
+            if(!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1]) ){
+                continue
+            }
+            var BeginningOfEvent  = convertTo24Hour(proccesedTime[0])
+            var EndOfEvent  = convertTo24Hour(proccesedTime[1])
+            nextDay.setHours(BeginningOfEvent.split(':')[0], BeginningOfEvent.split(':')[1]);
+            var startTimeString =  nextDay.toISOString()
+            nextDay.setHours(EndOfEvent.split(':')[0], EndOfEvent.split(':')[1]);
+            var endTimeString =  nextDay.toISOString()
+            
+            var reccurString = createReccurenceString(reoccurenceStrings[termBeginandEnd[1].trim()], returnDaysString(event['dayTimeNumber']))
+
+            const eventToAdd = {
+                'summary':event['Description'],
+                'location':event['classNumber'],
+                'start':{
+                    'dateTime':startTimeString, 
+                    'timeZone': 'America/New_York'
+                },
+                'end':{
+                    'dateTime':endTimeString,
+                    'timeZone': 'America/New_York'
+                },
+                'recurrence': [
+                    reccurString
+                  ]
+            }
+           
+            ev.push(eventToAdd)
+
+           
+            
         }
 
     }
+    
+    return ev
 }
 
-const returnDaysOfClass = (array) =>{
-    const arr = []
-    for(var i in array){
 
-    }
-}
 
 const checkIfAllTimesEqual = (array) =>{
     var time = array[0][1]
     for(var i = 1; i < array.length; i++){
 
-        if(array[i][0]!==time){
+        if(array[i][1]!==time){
             return false
         }
 
     }
     return true
-
-
 }
 
 const scrapePage = ()=>{
+
 
     var table = document.querySelector('tbody')
     var elements = document.getElementsByClassName("table table-hover table-condensed")[0].children[1].rows;
@@ -154,7 +215,7 @@ const scrapePage = ()=>{
                 var table = elements[i].children[j].getElementsByClassName('table table-bordered table-condensed')[0].children[0].children
                 var termBeginandEnd = elements[i].children[j].lastElementChild.innerHTML.replace(/<[^>]*>?/gm, '').trim().replace('Runs From:' ,'');
                 termBeginandEnd = termBeginandEnd.split('To:')
-
+            
 
  
                 event['dayTimeNumber'] = []
@@ -169,16 +230,20 @@ const scrapePage = ()=>{
                 }
                 //This returns true or false depending if all the times are the exact same. 
                 if(checkIfAllTimesEqual(event['dayTimeNumber'])){
-                    createEventStrings(termBeginandEnd, event)
+
+                    
+                    const arrOfObjects = createEventStrings(termBeginandEnd, event)
+                    
+                    arrOfObjects.forEach(e=>{
+                        sch.push(e)
+                    })
                 }
                 
 
             }
         }
         
-        if(Object.keys(event).length!== 0){
-        sch.push(event)
-        }
+
     
         
     }
