@@ -55,6 +55,45 @@ chrome.runtime.onMessage.addListener(msgObj => {
     dayOfTheWeek['Th'] = 4
     dayOfTheWeek['F'] = 5
 
+    const finalEventObjects = []
+
+const createEventStrings = (termBeginandEnd, event)=>{
+    
+    for(const DateTime in date){
+        if(termBeginandEnd[0].trim().includes(DateTime)){
+            //Given the start day of the term, this will spit out the first class for this course. 
+            //I need a list of the days in which it repeats. 
+
+            var nextDay = nextWeekdayDate(new Date(termBeginandEnd[0].trim().replace(DateTime, date[DateTime]).split("-").reverse().join("-") + " EST"), dayOfTheWeek[event['dayTimeNumber'][0][0]] )
+            var timeConversion  = convertTo24Hour(event['dayTimeNumber'][0][1]).split(':');
+            nextDay.setHours(timeConversion[0], timeConversion[1]);
+            event['classBegin'] =  nextDay.toISOString()
+        }
+
+    }
+}
+
+const returnDaysOfClass = (array) =>{
+    const arr = []
+    for(var i in array){
+
+    }
+}
+
+const checkIfAllTimesEqual = (array) =>{
+    var time = array[0][1]
+    for(var i = 1; i < array.length; i++){
+
+        if(array[i][0]!==time){
+            return false
+        }
+
+    }
+    return true
+
+
+}
+
 const scrapePage = ()=>{
 
     var table = document.querySelector('tbody')
@@ -126,30 +165,14 @@ const scrapePage = ()=>{
                     var  time  = table[k].children[1].innerHTML.trim()
                     var  classNumber  = table[k].children[2].innerHTML.trim()
                     event['dayTimeNumber'].push([day, time, classNumber])
-                    if(k===0){
 
-                        for(const DateTime in date){
-                            if(termBeginandEnd[0].trim().includes(DateTime)){
-                                //Given the start of the day 
-                                var nextDay = nextWeekdayDate(new Date(termBeginandEnd[0].trim().replace(DateTime, date[DateTime]).split("-").reverse().join("-") + " EST"))
-                                var timeConversion  = convertTo24Hour(time).split(':');
-                                nextDay.setHours(timeConversion[0], timeConversion[1]);
-                                event['classBegin'] =  nextDay.toISOString()
-                            }
-                            if(termBeginandEnd[1].trim().includes(DateTime)){
-                                var nextDay = nextWeekdayDate(new Date(termBeginandEnd[0].trim().replace(DateTime, date[DateTime]).split("-").reverse().join("-") + " EST"))
-                                var timeConversion  = convertTo24Hour(time).split(':');
-                                nextDay.setHours(timeConversion[0], timeConversion[1]);
-                                event['classEnd'] =  nextDay.toISOString()
-                            }
-                        }
-                    }
                 }
-
-            }
-            else if (j == 10){
+                //This returns true or false depending if all the times are the exact same. 
+                if(checkIfAllTimesEqual(event['dayTimeNumber'])){
+                    createEventStrings(termBeginandEnd, event)
+                }
                 
-                event['deliveryType'] = elements[i].children[j].innerHTML.trim()
+
             }
         }
         
