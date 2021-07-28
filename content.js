@@ -2,6 +2,10 @@ chrome.runtime.onMessage.addListener((msgObj) => {
   console.log("buckets of yolo there boiz", msgObj);
 
   var sch = scrapePage();
+  sch = sch.filter(
+    (v, i, a) =>
+      a.findIndex((t) => JSON.stringify(t) === JSON.stringify(v)) === i
+  );
 
   chrome.runtime.sendMessage(
     {
@@ -55,6 +59,16 @@ function convertTo24Hour(time) {
   }
   return time.replace(/(AM|PM)/, "").trim();
 }
+
+var colorId = 1;
+
+const incrermentColor = () => {
+  colorId = (colorId + 1) % 11;
+  if (colorId === 0) {
+    colorId = 1;
+  }
+  return colorId;
+};
 
 const dayOfTheWeek = new Object();
 dayOfTheWeek["M"] = 1;
@@ -126,6 +140,7 @@ const createEventStrings = (termBeginandEnd, event, index) => {
           "Section:" +
           event["Section"],
         location: event["dayTimeNumber"][index][2],
+        colorId: colorId,
         start: {
           dateTime: startTimeString,
           timeZone: "America/New_York",
@@ -136,6 +151,8 @@ const createEventStrings = (termBeginandEnd, event, index) => {
         },
         recurrence: [reccurString],
       };
+
+      incrermentColor();
 
       ev.push(eventToAdd);
     }
@@ -225,20 +242,19 @@ const scrapePage = () => {
           event["dayTimeNumber"].push([day, time, classNumber]);
         }
         //This returns true or false depending if all the times are the exact same.
-        if (checkIfAllTimesEqual(event["dayTimeNumber"])) {
-          const arrOfObjects = createEventStrings(termBeginandEnd, event, 0);
+        // if (checkIfAllTimesEqual(event["dayTimeNumber"])) {
+        //   const arrOfObjects = createEventStrings(termBeginandEnd, event, 0);
+
+        //   arrOfObjects.forEach((e) => {
+        //     sch.push(e);
+        //   });
+        // } else {
+        for (var i = 0; i < event["dayTimeNumber"].length; i++) {
+          const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
 
           arrOfObjects.forEach((e) => {
             sch.push(e);
           });
-        } else {
-          for (var i = 0; i < event["dayTimeNumber"].length; i++) {
-            const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
-
-            arrOfObjects.forEach((e) => {
-              sch.push(e);
-            });
-          }
         }
       }
     }
