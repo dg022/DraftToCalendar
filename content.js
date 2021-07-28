@@ -116,8 +116,16 @@ const createEventStrings = (termBeginandEnd, event) => {
       );
 
       const eventToAdd = {
-        summary: event["Description"],
-        location: event["classNumber"],
+        summary:
+          event["Department"] +
+          " " +
+          event["Course"] +
+          " " +
+          event["Type"] +
+          " " +
+          "Section:" +
+          event["Section"],
+        location: event["dayTimeNumber"][0][2],
         start: {
           dateTime: startTimeString,
           timeZone: "America/New_York",
@@ -223,6 +231,8 @@ const scrapePage = () => {
           arrOfObjects.forEach((e) => {
             sch.push(e);
           });
+        }else{
+            
         }
       }
     }
