@@ -63,7 +63,7 @@ dayOfTheWeek["W"] = 3;
 dayOfTheWeek["Th"] = 4;
 dayOfTheWeek["F"] = 5;
 
-const createEventStrings = (termBeginandEnd, event) => {
+const createEventStrings = (termBeginandEnd, event, index) => {
   const date = new Object();
   date["January"] = "01";
   date["February"] = "02";
@@ -94,9 +94,9 @@ const createEventStrings = (termBeginandEnd, event) => {
             .reverse()
             .join("-") + " EST"
         ),
-        dayOfTheWeek[event["dayTimeNumber"][0][0]]
+        dayOfTheWeek[event["dayTimeNumber"][index][0]]
       );
-      var proccesedTime = event["dayTimeNumber"][0][1].split(" -  ");
+      var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
       if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
         continue;
       }
@@ -125,7 +125,7 @@ const createEventStrings = (termBeginandEnd, event) => {
           " " +
           "Section:" +
           event["Section"],
-        location: event["dayTimeNumber"][0][2],
+        location: event["dayTimeNumber"][index][2],
         start: {
           dateTime: startTimeString,
           timeZone: "America/New_York",
@@ -226,13 +226,19 @@ const scrapePage = () => {
         }
         //This returns true or false depending if all the times are the exact same.
         if (checkIfAllTimesEqual(event["dayTimeNumber"])) {
-          const arrOfObjects = createEventStrings(termBeginandEnd, event);
+          const arrOfObjects = createEventStrings(termBeginandEnd, event, 0);
 
           arrOfObjects.forEach((e) => {
             sch.push(e);
           });
-        }else{
-            
+        } else {
+          for (var i = 0; i < event["dayTimeNumber"].length; i++) {
+            const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
+
+            arrOfObjects.forEach((e) => {
+              sch.push(e);
+            });
+          }
         }
       }
     }
