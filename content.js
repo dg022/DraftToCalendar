@@ -1,11 +1,21 @@
-chrome.runtime.onMessage.addListener((msgObj) => {
-  console.log("buckets of yolo there boiz", msgObj);
+fetch("https://momentjs.com/downloads/moment.min.js")
+  .then((resp) => resp.text())
+  .then(eval)
+  .catch(console.error);
 
+fetch("https://momentjs.com/downloads/moment-timezone-with-data.min.js")
+  .then((resp) => resp.text())
+  .then(eval)
+  .catch(console.error);
+// var s = document.createElement("script");
+// s.src = chrome.runtime.getURL("script.js");
+// s.onload = function () {
+//   console.log("its done loading", window);
+//   this.remove();
+// };
+//(document.head || document.documentElement).appendChild(s);
+chrome.runtime.onMessage.addListener((msgObj) => {
   var sch = scrapePage();
-  sch = sch.filter(
-    (v, i, a) =>
-      a.findIndex((t) => JSON.stringify(t) === JSON.stringify(v)) === i
-  );
 
   chrome.runtime.sendMessage(
     {
@@ -44,7 +54,7 @@ const returnDaysString = (arr) => {
   daysConversion["F"] = "FR";
   days = [];
   for (var i = 0; i < arr.length; i++) {
-    days.push(daysConversion[arr[i][0]]);
+    days.push(daysConversion[arr[0]]);
   }
   return days.toString();
 };
@@ -98,7 +108,12 @@ const createEventStrings = (termBeginandEnd, event, index) => {
     if (DateTime && termBeginandEnd[0].trim().includes(DateTime)) {
       //Given the start day of the term, this will spit out the first class for this course.
       //I need a list of the days in which it repeats.
-
+      var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
+      if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
+        continue;
+      }
+      var BeginningOfEvent = convertTo24Hour(proccesedTime[0]);
+      var EndOfEvent = convertTo24Hour(proccesedTime[1]);
       var nextDay = nextWeekdayDate(
         new Date(
           termBeginandEnd[0]
@@ -106,27 +121,58 @@ const createEventStrings = (termBeginandEnd, event, index) => {
             .replace(DateTime, date[DateTime])
             .split("-")
             .reverse()
-            .join("-") + " EST"
+            .join("-") +
+            " " +
+            BeginningOfEvent.split(":")[0] +
+            ":" +
+            BeginningOfEvent.split(":")[1] +
+            " UTC"
         ),
+
         dayOfTheWeek[event["dayTimeNumber"][index][0]]
       );
-      var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
-      if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
-        continue;
-      }
-      var BeginningOfEvent = convertTo24Hour(proccesedTime[0]);
-      var EndOfEvent = convertTo24Hour(proccesedTime[1]);
-      nextDay.setHours(
-        BeginningOfEvent.split(":")[0],
-        BeginningOfEvent.split(":")[1]
-      );
-      var startTimeString = nextDay.toISOString();
-      nextDay.setHours(EndOfEvent.split(":")[0], EndOfEvent.split(":")[1]);
-      var endTimeString = nextDay.toISOString();
+      var LastDay = nextWeekdayDate(
+        new Date(
+          termBeginandEnd[0]
+            .trim()
+            .replace(DateTime, date[DateTime])
+            .split("-")
+            .reverse()
+            .join("-") +
+            " " +
+            EndOfEvent.split(":")[0] +
+            ":" +
+            EndOfEvent.split(":")[1] +
+            " UTC"
+        ),
 
+        dayOfTheWeek[event["dayTimeNumber"][index][0]]
+      );
+      //var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
+      //   if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
+      //     continue;
+      //   }
+      //   var BeginningOfEvent = convertTo24Hour(proccesedTime[0]);
+      //   var EndOfEvent = convertTo24Hour(proccesedTime[1]);
+      //   nextDay.setHours(
+      //     BeginningOfEvent.split(":")[0],
+      //     BeginningOfEvent.split(":")[1]
+      //   );
+      var startTimeString = nextDay.toISOString();
+      //nextDay.setHours(EndOfEvent.split(":")[0], EndOfEvent.split(":")[1]);
+      var endTimeString = LastDay.toISOString();
+      var offSet = "";
+      if (
+        new window.moment(startTimeString).tz("America/Toronto")._offset ===
+        -240
+      ) {
+        offSet = "-04:00";
+      } else {
+        offSet = "-05:00";
+      }
       var reccurString = createReccurenceString(
         reoccurenceStrings[termBeginandEnd[1].trim()],
-        returnDaysString(event["dayTimeNumber"])
+        returnDaysString(event["dayTimeNumber"][index])
       );
 
       const eventToAdd = {
@@ -142,12 +188,12 @@ const createEventStrings = (termBeginandEnd, event, index) => {
         location: event["dayTimeNumber"][index][2],
         colorId: colorId,
         start: {
-          dateTime: startTimeString,
-          timeZone: "America/New_York",
+          dateTime: startTimeString.replace("Z", offSet),
+          timeZone: "America/Toronto",
         },
         end: {
-          dateTime: endTimeString,
-          timeZone: "America/New_York",
+          dateTime: endTimeString.replace("Z", offSet),
+          timeZone: "America/Toronto",
         },
         recurrence: [reccurString],
       };
@@ -256,6 +302,7 @@ const scrapePage = () => {
             sch.push(e);
           });
         }
+        //}
       }
     }
   }

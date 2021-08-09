@@ -33,12 +33,6 @@ window.onload = function () {
   // var date = new Date();
   // console.log(nextWeekdayDate(date, 5)); // Outputs the date next Friday after today.
 
-  const nextWeekdayDate = (date, day_in_week) => {
-    var ret = new Date(date || new Date());
-    ret.setDate(ret.getDate() + ((day_in_week - 1 - ret.getDay() + 7) % 7) + 1);
-    return ret;
-  };
-
   const sendEvents = (events, id) => {
     events.forEach((e) => {
       chrome.identity.getAuthToken({ interactive: true }, function (token) {
