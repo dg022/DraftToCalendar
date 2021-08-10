@@ -7,13 +7,7 @@ fetch("https://momentjs.com/downloads/moment-timezone-with-data.min.js")
   .then((resp) => resp.text())
   .then(eval)
   .catch(console.error);
-// var s = document.createElement("script");
-// s.src = chrome.runtime.getURL("script.js");
-// s.onload = function () {
-//   console.log("its done loading", window);
-//   this.remove();
-// };
-//(document.head || document.documentElement).appendChild(s);
+
 chrome.runtime.onMessage.addListener((msgObj) => {
   var sch = scrapePage();
 
@@ -27,9 +21,6 @@ chrome.runtime.onMessage.addListener((msgObj) => {
     }
   );
 });
-
-// var date = new DateTime();
-// console.log(nextWeekdayDate(date, 5)); // Outputs the date next Friday after today.
 
 const nextWeekdayDate = (date, day_in_week) => {
   var ret = new Date(date || new Date());
@@ -106,8 +97,6 @@ const createEventStrings = (termBeginandEnd, event, index) => {
 
   for (const DateTime in date) {
     if (DateTime && termBeginandEnd[0].trim().includes(DateTime)) {
-      //Given the start day of the term, this will spit out the first class for this course.
-      //I need a list of the days in which it repeats.
       var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
       if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
         continue;
@@ -148,18 +137,9 @@ const createEventStrings = (termBeginandEnd, event, index) => {
 
         dayOfTheWeek[event["dayTimeNumber"][index][0]]
       );
-      //var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
-      //   if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
-      //     continue;
-      //   }
-      //   var BeginningOfEvent = convertTo24Hour(proccesedTime[0]);
-      //   var EndOfEvent = convertTo24Hour(proccesedTime[1]);
-      //   nextDay.setHours(
-      //     BeginningOfEvent.split(":")[0],
-      //     BeginningOfEvent.split(":")[1]
-      //   );
+
       var startTimeString = nextDay.toISOString();
-      //nextDay.setHours(EndOfEvent.split(":")[0], EndOfEvent.split(":")[1]);
+
       var endTimeString = LastDay.toISOString();
       var offSet = "";
       if (
@@ -219,9 +199,17 @@ const checkIfAllTimesEqual = (array) => {
 
 const scrapePage = () => {
   var table = document.querySelector("tbody");
+
   var elements = document.getElementsByClassName(
     "table table-hover table-condensed"
   )[0].children[1].rows;
+
+  if (!elements) {
+    alert(
+      "Please navigate to: https://draftmyschedule.uwo.ca/secure/builder.cfm"
+    );
+  }
+
   var sch = [];
 
   for (var i in elements) {
@@ -287,14 +275,7 @@ const scrapePage = () => {
           var classNumber = table[k].children[2].innerHTML.trim();
           event["dayTimeNumber"].push([day, time, classNumber]);
         }
-        //This returns true or false depending if all the times are the exact same.
-        // if (checkIfAllTimesEqual(event["dayTimeNumber"])) {
-        //   const arrOfObjects = createEventStrings(termBeginandEnd, event, 0);
 
-        //   arrOfObjects.forEach((e) => {
-        //     sch.push(e);
-        //   });
-        // } else {
         for (var i = 0; i < event["dayTimeNumber"].length; i++) {
           const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
 
@@ -302,7 +283,6 @@ const scrapePage = () => {
             sch.push(e);
           });
         }
-        //}
       }
     }
   }

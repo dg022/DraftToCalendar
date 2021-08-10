@@ -19,7 +19,15 @@ window.onload = function () {
         contentType: "json",
       };
       fetch("https://www.googleapis.com/calendar/v3/calendars", init)
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) {
+            console.log("this was an error");
+            document.querySelector("button").innerHTML =
+              "Sadly there was an error :(";
+            throw Error(response.statusText);
+          }
+          response.json();
+        })
         .then(function (data) {
           chrome.tabs.query({}, (tabs) => {
             tabs.forEach((tab) => {
@@ -51,9 +59,7 @@ window.onload = function () {
           init
         )
           .then((response) => response.json())
-          .then(function (data) {
-            console.log(data);
-          });
+          .then(function (data) {});
       });
     });
   };
