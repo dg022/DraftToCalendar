@@ -31,17 +31,44 @@ window.onload = function () {
         .then(function (data) {
           chrome.tabs.query({}, (tabs) => {
             tabs.forEach((tab) => {
-              chrome.tabs.sendMessage(tab.id, data.id);
+              deleteCalender(data.id)
+              break;
+              //chrome.tabs.sendMessage(tab.id, data.id);
             });
           });
         });
     });
   });
 
-  // var date = new Date();
-  // console.log(nextWeekdayDate(date, 5)); // Outputs the date next Friday after today.
+
+
+  const deleteCalender = (id) =>{
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      let init = {
+        method: "DELETE",
+        async: true,
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
+        },
+        contentType: "json",
+      };
+      fetch(
+        "https://www.googleapis.com/calendar/v3/calendars/"+id,
+        init
+      )
+        .then((response) => {
+          if(!response.ok){
+            //Handle error
+          }
+        })
+        .then(function (data) {});
+    });
+  }
+
 
   const sendEvents = (events, id) => {
+    var wasError = false;
     events.forEach((e) => {
       chrome.identity.getAuthToken({ interactive: true }, function (token) {
         let init = {
@@ -58,10 +85,23 @@ window.onload = function () {
           "https://www.googleapis.com/calendar/v3/calendars/" + id + "/events",
           init
         )
-          .then((response) => response.json())
+          .then((response) => {
+            if(!response.ok){
+              wasError = true; 
+              break;
+            }
+          })
           .then(function (data) {});
       });
     });
+
+    if(wasError){
+      //If there was an error creating the events for the calender, you want to delete the calender that you created previously. 
+      document.querySelector("button").innerHTML =
+      "Calender creation failed, refresh page";
+
+
+    }
   };
 
   chrome.runtime.onMessage.addListener(function (
