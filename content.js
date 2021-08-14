@@ -199,17 +199,9 @@ const checkIfAllTimesEqual = (array) => {
 
 const scrapePage = () => {
   var table = document.querySelector("tbody");
-
   var elements = document.getElementsByClassName(
     "table table-hover table-condensed"
   )[0].children[1].rows;
-
-  if (!elements) {
-    alert(
-      "Please navigate to: https://draftmyschedule.uwo.ca/secure/builder.cfm"
-    );
-  }
-
   var sch = [];
 
   for (var i in elements) {

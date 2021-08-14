@@ -5,6 +5,10 @@ window.onload = function () {
     //     chrome.tabs.sendMessage(tab.id, "hey");
     //   });
     // });
+    createCalender();
+  });
+
+  const createCalender = () => {
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
       let init = {
         method: "POST",
@@ -20,55 +24,35 @@ window.onload = function () {
       };
       fetch("https://www.googleapis.com/calendar/v3/calendars", init)
         .then((response) => {
-          if (!response.ok) {
-            console.log("this was an error");
-            document.querySelector("button").innerHTML =
-              "Sadly there was an error :(";
-            throw Error(response.statusText);
+          console.log(response);
+          if (response.status == 401) {
+            console.log("the response was 401");
+            chrome.identity.removeCachedAuthToken(
+              { token: token },
+              function () {
+                // This forces a rerun of the funciton
+                createCalender();
+              }
+            );
           }
-          response.json();
+          return response.json();
         })
         .then(function (data) {
           chrome.tabs.query({}, (tabs) => {
             tabs.forEach((tab) => {
-              deleteCalender(data.id)
-              break;
-              //chrome.tabs.sendMessage(tab.id, data.id);
+              chrome.tabs.sendMessage(tab.id, data.id);
             });
           });
         });
     });
-  });
+  };
+  // var date = new Date();
+  // console.log(nextWeekdayDate(date, 5)); // Outputs the date next Friday after today.
 
-
-
-  const deleteCalender = (id) =>{
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      let init = {
-        method: "DELETE",
-        async: true,
-        headers: {
-          Authorization: "Bearer " + token,
-          "Content-Type": "application/json",
-        },
-        contentType: "json",
-      };
-      fetch(
-        "https://www.googleapis.com/calendar/v3/calendars/"+id,
-        init
-      )
-        .then((response) => {
-          if(!response.ok){
-            //Handle error
-          }
-        })
-        .then(function (data) {});
-    });
-  }
-
+  //
 
   const sendEvents = (events, id) => {
-    var wasError = false;
+    let wasError = false;
     events.forEach((e) => {
       chrome.identity.getAuthToken({ interactive: true }, function (token) {
         let init = {
@@ -86,21 +70,26 @@ window.onload = function () {
           init
         )
           .then((response) => {
-            if(!response.ok){
-              wasError = true; 
-              break;
+            if (!response.ok) {
+              wasError = true;
             }
+
+            return response.json();
           })
-          .then(function (data) {});
+          .then(function (data) {
+            console.log(data);
+          });
       });
     });
 
-    if(wasError){
-      //If there was an error creating the events for the calender, you want to delete the calender that you created previously. 
-      document.querySelector("button").innerHTML =
-      "Calender creation failed, refresh page";
-
-
+    if (wasError) {
+      document.getElementById("message").innerHTML =
+        "There was an error adding the events to your calender";
+      document.getElementById("message").style.color = "red";
+    } else {
+      document.getElementById("message").innerHTML =
+        "Calender sucessfully added :)";
+      document.getElementById("message").style.color = "green";
     }
   };
 
