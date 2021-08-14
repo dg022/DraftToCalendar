@@ -202,6 +202,9 @@ const scrapePage = () => {
   var elements = document.getElementsByClassName(
     "table table-hover table-condensed"
   )[0].children[1].rows;
+
+  //if elements has nothing, they are on the wrong page or one of 1000 other things. Let the user know.
+
   var sch = [];
 
   for (var i in elements) {

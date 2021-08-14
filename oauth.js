@@ -34,6 +34,10 @@ window.onload = function () {
                 createCalender();
               }
             );
+          } else if (response.status == 403) {
+            document.getElementById("message").innerHTML =
+              "I ran out of google api requests :(  Consider supproting the project so I can get more!";
+            document.getElementById("message").style.color = "red";
           }
           return response.json();
         })
@@ -49,10 +53,32 @@ window.onload = function () {
   // var date = new Date();
   // console.log(nextWeekdayDate(date, 5)); // Outputs the date next Friday after today.
 
-  //
+  const deleteCalender = (id) => {
+    if ((id && id, length !== 0)) {
+      chrome.identity.getAuthToken({ interactive: true }, function (token) {
+        let init = {
+          method: "DELETE",
+          async: true,
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          contentType: "json",
+        };
+        fetch("https://www.googleapis.com/calendar/v3/calendars/" + id, init)
+          .then((response) => {
+            return response.json();
+          })
+          .then(function (data) {
+            console.log(data);
+          });
+      });
+    }
+  };
 
   const sendEvents = (events, id) => {
     let wasError = false;
+    // ToDo check if we even have events
     events.forEach((e) => {
       chrome.identity.getAuthToken({ interactive: true }, function (token) {
         let init = {
@@ -86,6 +112,7 @@ window.onload = function () {
       document.getElementById("message").innerHTML =
         "There was an error adding the events to your calender";
       document.getElementById("message").style.color = "red";
+      deleteCalender(id);
     } else {
       document.getElementById("message").innerHTML =
         "Calender sucessfully added :)";
