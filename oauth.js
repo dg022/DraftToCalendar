@@ -1,8 +1,7 @@
 window.onload = function () {
   var query = { active: true, currentWindow: true };
   function callback(tabs) {
-    var currentTab = tabs[0]; // there will be only one in this array
-    console.log(currentTab); // also has properties like currentTab.id
+    var currentTab = tabs[0];
     if (!currentTab.url.includes("https://draftmyschedule.uwo.ca/secure/")) {
       document.getElementById("but").disabled = true;
       document.getElementById("but").style["background-color"] = "#cccccc";
@@ -13,11 +12,6 @@ window.onload = function () {
   chrome.tabs.query(query, callback);
 
   document.querySelector("button").addEventListener("click", function () {
-    // chrome.tabs.query({}, (tabs) => {
-    //   tabs.forEach((tab) => {
-    //     chrome.tabs.sendMessage(tab.id, "hey");
-    //   });
-    // });
     chrome.tabs.query({}, (tabs) => {
       tabs.forEach((tab) => {
         chrome.tabs.sendMessage(tab.id, "");
@@ -45,11 +39,9 @@ window.onload = function () {
         .then((response) => {
           console.log(response);
           if (response.status == 401) {
-            console.log("the response was 401");
             chrome.identity.removeCachedAuthToken(
               { token: token },
               function () {
-                // This forces a rerun of the funciton
                 createCalender(events);
               }
             );
@@ -71,8 +63,6 @@ window.onload = function () {
         });
     });
   };
-  // var date = new Date();
-  // console.log(nextWeekdayDate(date, 5)); // Outputs the date next Friday after today.
 
   const deleteCalender = (id) => {
     if (id && id.length !== 0) {
@@ -143,6 +133,7 @@ window.onload = function () {
         document.getElementById("message").innerHTML =
           "I ran out of google api requests :(  Consider supporting the project so I can get more!";
         document.getElementById("message").style.color = "red";
+        deleteCalender(id);
       } else if (wasError) {
         document.getElementById("message").innerHTML =
           "There was an error adding the events to your calender";

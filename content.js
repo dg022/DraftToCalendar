@@ -1,12 +1,3 @@
-fetch("https://momentjs.com/downloads/moment.min.js")
-  .then((resp) => resp.text())
-  .then(eval)
-  .catch(console.error);
-
-fetch("https://momentjs.com/downloads/moment-timezone-with-data.min.js")
-  .then((resp) => resp.text())
-  .then(eval)
-  .catch(console.error);
 
 chrome.runtime.onMessage.addListener((msgObj) => {
   var sch = scrapePage();
@@ -199,8 +190,6 @@ const scrapePage = () => {
   if (elements.length === 1) {
     return "err";
   }
-
-  //if elements has nothing, they are on the wrong page or one of 1000 other things. Let the user know.
 
   var sch = [];
 
