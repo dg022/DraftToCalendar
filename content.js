@@ -27,8 +27,8 @@ const nextWeekdayDate = (date, day_in_week) => {
 };
 
 const reoccurenceStrings = new Object();
-reoccurenceStrings["08-December-2021"] = "20211208T000000Z";
-reoccurenceStrings["01-April-2022"] = "20220401T000000Z";
+reoccurenceStrings["08-December-2021"] = "20211209T070000Z";
+reoccurenceStrings["01-April-2022"] = "20220401T060000Z";
 
 const createReccurenceString = (Until, Days) => {
   return "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=" + Days + ";UNTIL=" + Until;
@@ -48,7 +48,14 @@ const returnDaysString = (arr) => {
   return days.toString();
 };
 
-function convertTo24Hour(time) {
+const startOfTermOffset = (string) => {
+  const offSet = new Object();
+  offSet["08-September-2021"] = "07-September-2021";
+  offSet["03-January-2022"] = "02-January-2022";
+  return offSet[string];
+};
+
+const convertTo24Hour = (time) => {
   var hours = parseInt(time.substr(0, 2));
   if (time.indexOf("AM") != -1 && hours == 12) {
     time = time.replace("12", "0");
@@ -57,7 +64,7 @@ function convertTo24Hour(time) {
     time = time.replace(hours, hours + 12);
   }
   return time.replace(/(AM|PM)/, "").trim();
-}
+};
 
 var colorId = 1;
 
@@ -103,8 +110,7 @@ const createEventStrings = (termBeginandEnd, event, index) => {
       var EndOfEvent = convertTo24Hour(proccesedTime[1]);
       var nextDay = nextWeekdayDate(
         new Date(
-          termBeginandEnd[0]
-            .trim()
+          startOfTermOffset(termBeginandEnd[0].trim())
             .replace(DateTime, date[DateTime])
             .split("-")
             .reverse()
@@ -120,8 +126,7 @@ const createEventStrings = (termBeginandEnd, event, index) => {
       );
       var LastDay = nextWeekdayDate(
         new Date(
-          termBeginandEnd[0]
-            .trim()
+          startOfTermOffset(termBeginandEnd[0].trim())
             .replace(DateTime, date[DateTime])
             .split("-")
             .reverse()
@@ -183,16 +188,6 @@ const createEventStrings = (termBeginandEnd, event, index) => {
   }
 
   return ev;
-};
-
-const checkIfAllTimesEqual = (array) => {
-  var time = array[0][1];
-  for (var i = 1; i < array.length; i++) {
-    if (array[i][1] !== time) {
-      return false;
-    }
-  }
-  return true;
 };
 
 const scrapePage = () => {

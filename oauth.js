@@ -66,7 +66,6 @@ window.onload = function () {
         })
         .then(function (data) {
           if (data.id !== undefined) {
-            console.log(data.id);
             sendEvents(events, data.id);
           }
         });
@@ -100,8 +99,6 @@ window.onload = function () {
   const sendEvents = (events, id) => {
     let wasError = false;
     let responseError = "";
-    // ToDo check if we even have events
-
     if (events === "err") {
       document.getElementById("message").innerHTML =
         "Empty calender / Can't find any schedule data!";
