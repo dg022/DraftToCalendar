@@ -10,11 +10,9 @@ fetch("https://momentjs.com/downloads/moment-timezone-with-data.min.js")
 
 chrome.runtime.onMessage.addListener((msgObj) => {
   var sch = scrapePage();
-
   chrome.runtime.sendMessage(
     {
       data: sch,
-      id: msgObj,
     },
     function (response) {
       console.log(response);
@@ -199,9 +197,13 @@ const checkIfAllTimesEqual = (array) => {
 
 const scrapePage = () => {
   var table = document.querySelector("tbody");
+
   var elements = document.getElementsByClassName(
     "table table-hover table-condensed"
   )[0].children[1].rows;
+  if (elements.length === 1) {
+    return "err";
+  }
 
   //if elements has nothing, they are on the wrong page or one of 1000 other things. Let the user know.
 
