@@ -57,6 +57,10 @@ window.onload = function () {
             document.getElementById("message").innerHTML =
               "I ran out of google api requests :(  Consider supporting the project so I can get more!";
             document.getElementById("message").style.color = "red";
+          } else if (response.status !== 200) {
+            document.getElementById("message").innerHTML =
+              "Unknown error has occured, please refresh page and try again.";
+            document.getElementById("message").style.color = "red";
           }
           return response.json();
         })
@@ -95,6 +99,7 @@ window.onload = function () {
 
   const sendEvents = (events, id) => {
     let wasError = false;
+    let responseError = "";
     // ToDo check if we even have events
 
     if (events === "err") {
@@ -122,7 +127,10 @@ window.onload = function () {
             init
           )
             .then((response) => {
-              if (!response.ok) {
+              if (response.status == 403) {
+                responseError =
+                  "I ran out of google api requests :(  Consider supporting the project so I can get more!";
+              } else if (!response.ok) {
                 wasError = true;
               }
 
@@ -134,7 +142,11 @@ window.onload = function () {
         });
       });
 
-      if (wasError) {
+      if (responseError !== "") {
+        document.getElementById("message").innerHTML =
+          "I ran out of google api requests :(  Consider supporting the project so I can get more!";
+        document.getElementById("message").style.color = "red";
+      } else if (wasError) {
         document.getElementById("message").innerHTML =
           "There was an error adding the events to your calender";
         document.getElementById("message").style.color = "red";
