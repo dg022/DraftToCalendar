@@ -1,4 +1,3 @@
-
 chrome.runtime.onMessage.addListener((msgObj) => {
   var sch = scrapePage();
   chrome.runtime.sendMessage(
@@ -184,10 +183,27 @@ const createEventStrings = (termBeginandEnd, event, index) => {
 const scrapePage = () => {
   var table = document.querySelector("tbody");
 
+  if (
+    document.getElementsByClassName("table table-hover table-condensed")[0] ===
+    undefined
+  ) {
+    console.log("one of these are undefiend 0");
+    return "err";
+  }
+
+  if (
+    document.getElementsByClassName("table table-hover table-condensed")[0]
+      .children[1] === undefined
+  ) {
+    console.log("one of these are undefiend 1");
+    return "err";
+  }
+
   var elements = document.getElementsByClassName(
     "table table-hover table-condensed"
   )[0].children[1].rows;
-  if (elements.length === 1) {
+  if (Array.from(elements).length === 1) {
+    console.log("one of these are undefiend 2");
     return "err";
   }
 

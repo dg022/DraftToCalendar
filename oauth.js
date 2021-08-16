@@ -17,11 +17,9 @@ window.onload = function () {
         chrome.tabs.sendMessage(tab.id, "");
       });
     });
-
-    //createCalender();
   });
 
-  const createCalender = (events) => {
+  const createcalendar = (events) => {
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
       let init = {
         method: "POST",
@@ -42,7 +40,7 @@ window.onload = function () {
             chrome.identity.removeCachedAuthToken(
               { token: token },
               function () {
-                createCalender(events);
+                createcalendar(events);
               }
             );
           } else if (response.status == 403) {
@@ -64,7 +62,7 @@ window.onload = function () {
     });
   };
 
-  const deleteCalender = (id) => {
+  const deletecalendar = (id) => {
     if (id && id.length !== 0) {
       chrome.identity.getAuthToken({ interactive: true }, function (token) {
         let init = {
@@ -91,9 +89,9 @@ window.onload = function () {
     let responseError = "";
     if (events === "err") {
       document.getElementById("message").innerHTML =
-        "Empty calender / Can't find any schedule data!";
+        "Empty calendar / Can't find any schedule data! Make sure you're on the Build Draft tab. If you want to use a saved draft, just select it and put it into edit mode.";
       document.getElementById("message").style.color = "red";
-      deleteCalender(id);
+      deletecalendar(id);
     } else {
       events.forEach((e) => {
         chrome.identity.getAuthToken({ interactive: true }, function (token) {
@@ -133,15 +131,15 @@ window.onload = function () {
         document.getElementById("message").innerHTML =
           "I ran out of google api requests :(  Consider supporting the project so I can get more!";
         document.getElementById("message").style.color = "red";
-        deleteCalender(id);
+        deletecalendar(id);
       } else if (wasError) {
         document.getElementById("message").innerHTML =
-          "There was an error adding the events to your calender";
+          "There was an error adding the events to your calendar";
         document.getElementById("message").style.color = "red";
-        deleteCalender(id);
+        deletecalendar(id);
       } else {
         document.getElementById("message").innerHTML =
-          "Calender sucessfully added :)";
+          "calendar sucessfully added :)";
         document.getElementById("message").style.color = "green";
       }
     }
@@ -152,7 +150,7 @@ window.onload = function () {
     sender,
     sendResponse
   ) {
-    createCalender(message.data);
+    createcalendar(message.data);
     sendResponse({
       data: message,
     });
