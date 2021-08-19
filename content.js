@@ -180,30 +180,38 @@ const createEventStrings = (termBeginandEnd, event, index) => {
   return ev;
 };
 
-const scrapePage = () => {
-  var table = document.querySelector("tbody");
-
+const getTable = () => {
   if (
     document.getElementsByClassName("table table-hover table-condensed")[0] ===
     undefined
   ) {
-    console.log("one of these are undefiend 0");
     return "err";
   }
-
   if (
     document.getElementsByClassName("table table-hover table-condensed")[0]
-      .children[1] === undefined
+      .children[1] !== undefined &&
+    document.getElementsByClassName("table table-hover table-condensed")[0]
+      .children[1].rows !== undefined
   ) {
-    console.log("one of these are undefiend 1");
-    return "err";
+    return document.getElementsByClassName(
+      "table table-hover table-condensed"
+    )[0].children[1].rows;
+  } else if (
+    document.getElementsByClassName("table table-hover table-condensed")[0]
+      .children[0] !== undefined &&
+    document.getElementsByClassName("table table-hover table-condensed")[0]
+      .children[0].rows !== undefined
+  ) {
+    return document.getElementsByClassName(
+      "table table-hover table-condensed"
+    )[0].children[0].rows;
   }
+};
 
-  var elements = document.getElementsByClassName(
-    "table table-hover table-condensed"
-  )[0].children[1].rows;
-  if (Array.from(elements).length === 1) {
-    console.log("one of these are undefiend 2");
+const scrapePage = () => {
+  var elements = getTable();
+
+  if (elements === "err" || Array.from(elements).length === 1) {
     return "err";
   }
 

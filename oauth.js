@@ -12,11 +12,12 @@ window.onload = function () {
   chrome.tabs.query(query, callback);
 
   document.querySelector("button").addEventListener("click", function () {
-    chrome.tabs.query({}, (tabs) => {
-      tabs.forEach((tab) => {
-        chrome.tabs.sendMessage(tab.id, "");
-      });
-    });
+    chrome.tabs.query(
+      { currentWindow: true, active: true },
+      function (tabArray) {
+        chrome.tabs.sendMessage(tabArray[0].id, "");
+      }
+    );
   });
 
   const createcalendar = (events) => {
@@ -88,8 +89,9 @@ window.onload = function () {
     let wasError = false;
     let responseError = "";
     if (events === "err") {
+      console.log(events);
       document.getElementById("message").innerHTML =
-        "Empty calendar / Can't find any schedule data! Make sure you're on the Build Draft tab. If you want to use a saved draft, just select it and put it into edit mode.";
+        "Empty calendar / Can't find any schedule data! Make sure you're on a tab with schedule data!";
       document.getElementById("message").style.color = "red";
       deletecalendar(id);
     } else {
@@ -115,6 +117,8 @@ window.onload = function () {
               if (response.status == 403) {
                 responseError =
                   "I ran out of google api requests :(  Consider supporting the project so I can get more!";
+              } else if (response.status !== 200) {
+                responseError = "Unknown error occured, please try again";
               } else if (!response.ok) {
                 wasError = true;
               }
@@ -128,8 +132,7 @@ window.onload = function () {
       });
 
       if (responseError !== "") {
-        document.getElementById("message").innerHTML =
-          "I ran out of google api requests :(  Consider supporting the project so I can get more!";
+        document.getElementById("message").innerHTML = responseError;
         document.getElementById("message").style.color = "red";
         deletecalendar(id);
       } else if (wasError) {
