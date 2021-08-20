@@ -16,9 +16,55 @@ const nextWeekdayDate = (date, day_in_week) => {
   return ret;
 };
 
+//Wont work for law students and nursing, Ivey
 const reoccurenceStrings = new Object();
 reoccurenceStrings["08-December-2021"] = "20211209T070000Z";
 reoccurenceStrings["01-April-2022"] = "20220401T060000Z";
+
+//Data strucutre: Code, [start date, end date(reoccurence string)]
+
+//0.5 course offered in first term
+reoccurenceStrings["A"] = ["07-September-2021", "20211209T070000Z"];
+
+//0.5 course offered in second term
+reoccurenceStrings["B"] = ["02-January-2022", "20220401T060000Z"];
+
+//1.0 course
+reoccurenceStrings["E"] = ["07-September-2021", "20220401T060000Z"];
+
+//0.5  essay course offered in first term
+reoccurenceStrings["F"] = ["07-September-2021", "20211209T070000Z"];
+
+//0.5 essatcourse offered in second term
+reoccurenceStrings["G"] = ["02-January-2022", "20220401T060000Z"];
+
+//Q
+// Runs From: 13-September-2021 To: 25-October-2021
+reoccurenceStrings["Q"] = ["12-September-2021", "20211025T060000Z"];
+
+//R
+//Runs From: 26-October-2021 To: 08-December-2021
+reoccurenceStrings["R"] = ["25-October-2021", "20211209T070000Z"];
+
+//S
+//Runs From: 03-January-2022 To: 11-February-2022
+reoccurenceStrings["S"] = ["02-January-2022", "20220211T070000Z"];
+
+//T
+// From: 14-February-2022 To: 01-April-2022
+reoccurenceStrings["T"] = ["13-February-2022", "20220401T060000Z"];
+
+//U
+//rom: 03-January-2022 To: 01-April-2022
+reoccurenceStrings["U"] = ["02-January-2022", "20220401T060000Z"];
+
+reoccurenceStrings["X"] = ["02-January-2022", "20220401T060000Z"];
+
+reoccurenceStrings["W"] = ["07-September-2021", "20211209T070000Z"];
+
+reoccurenceStrings["Y"] = ["07-September-2021", "20220401T060000Z"];
+
+reoccurenceStrings["Z"] = ["07-September-2021", "20220401T060000Z"];
 
 const createReccurenceString = (Until, Days) => {
   return "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=" + Days + ";UNTIL=" + Until;
@@ -185,7 +231,7 @@ const getTable = () => {
     document.getElementsByClassName("table table-hover table-condensed")[0] ===
     undefined
   ) {
-    return "err";
+    return ["err", null];
   }
   if (
     document.getElementsByClassName("table table-hover table-condensed")[0]
@@ -193,23 +239,146 @@ const getTable = () => {
     document.getElementsByClassName("table table-hover table-condensed")[0]
       .children[1].rows !== undefined
   ) {
-    return document.getElementsByClassName(
-      "table table-hover table-condensed"
-    )[0].children[1].rows;
+    return [
+      document.getElementsByClassName("table table-hover table-condensed")[0]
+        .children[1].rows,
+      1,
+    ];
   } else if (
     document.getElementsByClassName("table table-hover table-condensed")[0]
       .children[0] !== undefined &&
     document.getElementsByClassName("table table-hover table-condensed")[0]
       .children[0].rows !== undefined
   ) {
-    return document.getElementsByClassName(
-      "table table-hover table-condensed"
-    )[0].children[0].rows;
+    return [
+      document.getElementsByClassName("table table-hover table-condensed")[0]
+        .children[0].rows,
+      2,
+    ];
+  }
+};
+
+const tableScraper = (event, elements, i, j, sch, tabType) => {
+  if (tabType === 2) {
+    if (j == 1) {
+      event["Department"] = elements[i].children[j].innerHTML;
+    } else if (j == 3) {
+      event["Course"] = elements[i].children[j].innerHTML;
+      console.log(event["Course"]);
+    } else if (j == 4) {
+      event["Type"] = elements[i].children[
+        j
+      ].lastElementChild.lastElementChild.innerHTML.replace(/\t/g, "");
+    } else if (j == 5) {
+      event["Section"] = elements[i].children[j].innerHTML;
+    } else if (j == 6) {
+      event["Description"] = elements[i].children[j].innerHTML.replace(
+        /&amp;/g,
+        "&"
+      );
+    } else if (j == 7) {
+      event["classNumber"] = elements[i].children[j].innerHTML;
+    } else if (j == 8) {
+      var instructor = elements[i].children[j].innerHTML
+        .replace(/<[^>]*>?/gm, "")
+        .trim();
+
+      event["Instructor"] = instructor;
+    } else if (j == 9) {
+      var table = elements[i].children[j].getElementsByClassName(
+        "table table-bordered table-condensed"
+      )[0].children[0].children;
+
+      console.log(table);
+
+      var termBeginandEnd = elements[i].children[j].lastElementChild.innerHTML
+        .replace(/<[^>]*>?/gm, "")
+        .trim()
+        .replace("Runs From:", "");
+      termBeginandEnd = termBeginandEnd.split("To:");
+
+      event["dayTimeNumber"] = [];
+
+      for (var k = 0; k < table.length; k++) {
+        var day = table[k].children[0].innerHTML.replace(/\&nbsp;/g, "").trim();
+        var time = table[k].children[1].innerHTML.trim();
+        var classNumber = table[k].children[2].innerHTML.trim();
+        event["dayTimeNumber"].push([day, time, classNumber]);
+      }
+
+      for (var i = 0; i < event["dayTimeNumber"].length; i++) {
+        const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
+        console.log(arrOfObjects);
+        arrOfObjects.forEach((e) => {
+          sch.push(e);
+        });
+      }
+    }
+  } else if (tabType === 1) {
+    if (j == 1) {
+      event["Department"] = elements[i].children[j].innerHTML;
+    } else if (j == 2) {
+      event["Course"] = elements[i].children[j].innerHTML;
+    } else if (j == 3) {
+      event["Type"] = elements[i].children[
+        j
+      ].lastElementChild.lastElementChild.innerHTML.replace(/\t/g, "");
+    } else if (j == 4) {
+      event["Section"] = elements[i].children[j].innerHTML;
+    } else if (j == 5) {
+      event["Description"] = elements[i].children[j].innerHTML.replace(
+        /&amp;/g,
+        "&"
+      );
+    } else if (j == 6) {
+      event["classNumber"] = elements[i].children[j].innerHTML;
+    } else if (j == 7) {
+      var instructor = elements[i].children[j].innerHTML
+        .replace(/<[^>]*>?/gm, "")
+        .trim();
+
+      event["Instructor"] = instructor;
+    } else if (j == 8) {
+      var table = elements[i].children[j].getElementsByClassName(
+        "table table-bordered table-condensed"
+      )[0].children[0].children;
+      console.log(
+        elements[i].children[j].lastElementChild.innerHTML
+          .replace(/<[^>]*>?/gm, "")
+          .trim()
+          .replace("Runs From:", ""),
+        "from here"
+      );
+      var termBeginandEnd = elements[i].children[j].lastElementChild.innerHTML
+        .replace(/<[^>]*>?/gm, "")
+        .trim()
+        .replace("Runs From:", "");
+      termBeginandEnd = termBeginandEnd.split("To:");
+
+      event["dayTimeNumber"] = [];
+
+      for (var k = 0; k < table.length; k++) {
+        var day = table[k].children[0].innerHTML.replace(/\&nbsp;/g, "").trim();
+        var time = table[k].children[1].innerHTML.trim();
+        var classNumber = table[k].children[2].innerHTML.trim();
+        event["dayTimeNumber"].push([day, time, classNumber]);
+      }
+
+      for (var i = 0; i < event["dayTimeNumber"].length; i++) {
+        const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
+
+        arrOfObjects.forEach((e) => {
+          sch.push(e);
+        });
+      }
+    }
   }
 };
 
 const scrapePage = () => {
-  var elements = getTable();
+  var table = getTable();
+  var elements = table[0];
+  var tableType = table[1];
 
   if (elements === "err" || Array.from(elements).length === 1) {
     return "err";
@@ -218,79 +387,19 @@ const scrapePage = () => {
   var sch = [];
 
   for (var i in elements) {
-    // 1 Department
-    // 2 Course
-    // 3 Type (lec, tut)
-    // 4 Section
-    // 5 Description
-    // 6 classNmbr
-    // 7 Instructor
-    // 8 Day/Times/Location
-    // 10 Delivery Type
     if (isNaN(i)) {
+      continue;
+    }
+    if (elements[i].className === "active") {
       continue;
     }
     var event = new Object();
 
     for (var j = 0; j < elements[i].children.length; j++) {
-      if (j == 1) {
-        if (elements[i].children[j].innerHTML.includes("Credits")) {
-          continue;
-        }
-
-        event["Department"] = elements[i].children[j].innerHTML;
-      } else if (j == 2) {
-        event["Course"] = elements[i].children[j].innerHTML;
-      } else if (j == 3) {
-        event["Type"] = elements[i].children[
-          j
-        ].lastElementChild.lastElementChild.innerHTML.replace(/\t/g, "");
-      } else if (j == 4) {
-        event["Section"] = elements[i].children[j].innerHTML;
-      } else if (j == 5) {
-        event["Description"] = elements[i].children[j].innerHTML.replace(
-          /&amp;/g,
-          "&"
-        );
-      } else if (j == 6) {
-        event["classNumber"] = elements[i].children[j].innerHTML;
-      } else if (j == 7) {
-        var instructor = elements[i].children[j].innerHTML
-          .replace(/<[^>]*>?/gm, "")
-          .trim();
-
-        event["Instructor"] = instructor;
-      } else if (j == 8) {
-        var table = elements[i].children[j].getElementsByClassName(
-          "table table-bordered table-condensed"
-        )[0].children[0].children;
-        var termBeginandEnd = elements[i].children[j].lastElementChild.innerHTML
-          .replace(/<[^>]*>?/gm, "")
-          .trim()
-          .replace("Runs From:", "");
-        termBeginandEnd = termBeginandEnd.split("To:");
-
-        event["dayTimeNumber"] = [];
-
-        for (var k = 0; k < table.length; k++) {
-          var day = table[k].children[0].innerHTML
-            .replace(/\&nbsp;/g, "")
-            .trim();
-          var time = table[k].children[1].innerHTML.trim();
-          var classNumber = table[k].children[2].innerHTML.trim();
-          event["dayTimeNumber"].push([day, time, classNumber]);
-        }
-
-        for (var i = 0; i < event["dayTimeNumber"].length; i++) {
-          const arrOfObjects = createEventStrings(termBeginandEnd, event, i);
-
-          arrOfObjects.forEach((e) => {
-            sch.push(e);
-          });
-        }
-      }
+      tableScraper(event, elements, i, j, sch, tableType);
     }
   }
 
+  console.log(sch);
   return sch;
 };
