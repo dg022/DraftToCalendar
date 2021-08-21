@@ -46,7 +46,7 @@ window.onload = function () {
             );
           } else if (response.status == 403) {
             document.getElementById("message").innerHTML =
-              "I ran out of google api requests :(  Consider supporting the project so I can get more!";
+              "I ran out of google api requests OR you've made too many calenders too quickly! Come back in a bit!";
             document.getElementById("message").style.color = "red";
           } else if (response.status !== 200) {
             document.getElementById("message").innerHTML =
@@ -116,7 +116,7 @@ window.onload = function () {
             .then((response) => {
               if (response.status == 403) {
                 responseError =
-                  "I ran out of google api requests :(  Consider supporting the project so I can get more!";
+                  "I ran out of google api requests OR you've made too many calenders too quickly! Come back in a bit!";
               } else if (response.status !== 200) {
                 responseError = "Unknown error occured, please try again";
               } else if (!response.ok) {
