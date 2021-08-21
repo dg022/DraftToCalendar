@@ -11,16 +11,16 @@ chrome.runtime.onMessage.addListener((msgObj) => {
 });
 
 const nextWeekdayDate = (date, day_in_week) => {
+  console.log(date, day_in_week);
   var ret = new Date(date || new Date());
   ret.setDate(ret.getDate() + ((day_in_week - 1 - ret.getDay() + 7) % 7) + 1);
   return ret;
 };
 
+//IF there is no no correspondign code, then we will assume its a full year course, i.e Z
+
 //Wont work for law students and nursing, Ivey
 const reoccurenceStrings = new Object();
-reoccurenceStrings["08-December-2021"] = "20211209T070000Z";
-reoccurenceStrings["01-April-2022"] = "20220401T060000Z";
-
 //Data strucutre: Code, [start date, end date(reoccurence string)]
 
 //0.5 course offered in first term
@@ -65,6 +65,14 @@ reoccurenceStrings["W"] = ["07-September-2021", "20211209T070000Z"];
 reoccurenceStrings["Y"] = ["07-September-2021", "20220401T060000Z"];
 
 reoccurenceStrings["Z"] = ["07-September-2021", "20220401T060000Z"];
+
+const returnDateAndReoccurence = (letter) => {
+  if (letter in reoccurenceStrings) {
+    return reoccurenceStrings[letter];
+  }
+
+  return reoccurenceStrings["Z"];
+};
 
 const createReccurenceString = (Until, Days) => {
   return "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=" + Days + ";UNTIL=" + Until;
@@ -137,16 +145,18 @@ const createEventStrings = (termBeginandEnd, event, index) => {
   var ev = [];
 
   for (const DateTime in date) {
-    if (DateTime && termBeginandEnd[0].trim().includes(DateTime)) {
+    if (DateTime && termBeginandEnd[0].includes(DateTime)) {
       var proccesedTime = event["dayTimeNumber"][index][1].split(" -  ");
       if (!/\d/.test(proccesedTime[0]) || !/\d/.test(proccesedTime[1])) {
         continue;
       }
       var BeginningOfEvent = convertTo24Hour(proccesedTime[0]);
       var EndOfEvent = convertTo24Hour(proccesedTime[1]);
+
+      console.log(event["dayTimeNumber"], index);
       var nextDay = nextWeekdayDate(
         new Date(
-          startOfTermOffset(termBeginandEnd[0].trim())
+          termBeginandEnd[0]
             .replace(DateTime, date[DateTime])
             .split("-")
             .reverse()
@@ -162,7 +172,7 @@ const createEventStrings = (termBeginandEnd, event, index) => {
       );
       var LastDay = nextWeekdayDate(
         new Date(
-          startOfTermOffset(termBeginandEnd[0].trim())
+          termBeginandEnd[0]
             .replace(DateTime, date[DateTime])
             .split("-")
             .reverse()
@@ -190,7 +200,7 @@ const createEventStrings = (termBeginandEnd, event, index) => {
         offSet = "-05:00";
       }
       var reccurString = createReccurenceString(
-        reoccurenceStrings[termBeginandEnd[1].trim()],
+        termBeginandEnd[1],
         returnDaysString(event["dayTimeNumber"][index])
       );
 
@@ -264,7 +274,6 @@ const tableScraper = (event, elements, i, j, sch, tabType) => {
       event["Department"] = elements[i].children[j].innerHTML;
     } else if (j == 3) {
       event["Course"] = elements[i].children[j].innerHTML;
-      console.log(event["Course"]);
     } else if (j == 4) {
       event["Type"] = elements[i].children[
         j
@@ -289,13 +298,9 @@ const tableScraper = (event, elements, i, j, sch, tabType) => {
         "table table-bordered table-condensed"
       )[0].children[0].children;
 
-      console.log(table);
-
-      var termBeginandEnd = elements[i].children[j].lastElementChild.innerHTML
-        .replace(/<[^>]*>?/gm, "")
-        .trim()
-        .replace("Runs From:", "");
-      termBeginandEnd = termBeginandEnd.split("To:");
+      var termBeginandEnd = returnDateAndReoccurence(
+        event["Course"].charAt(event["Course"].length - 1)
+      );
 
       event["dayTimeNumber"] = [];
 
@@ -342,18 +347,10 @@ const tableScraper = (event, elements, i, j, sch, tabType) => {
       var table = elements[i].children[j].getElementsByClassName(
         "table table-bordered table-condensed"
       )[0].children[0].children;
-      console.log(
-        elements[i].children[j].lastElementChild.innerHTML
-          .replace(/<[^>]*>?/gm, "")
-          .trim()
-          .replace("Runs From:", ""),
-        "from here"
+
+      var termBeginandEnd = returnDateAndReoccurence(
+        event["Course"].charAt(event["Course"].length - 1)
       );
-      var termBeginandEnd = elements[i].children[j].lastElementChild.innerHTML
-        .replace(/<[^>]*>?/gm, "")
-        .trim()
-        .replace("Runs From:", "");
-      termBeginandEnd = termBeginandEnd.split("To:");
 
       event["dayTimeNumber"] = [];
 
