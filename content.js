@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((msgObj) => {
 });
 
 const nextWeekdayDate = (date, day_in_week) => {
-  console.log(date, day_in_week);
+  //console.log(date, day_in_week);
   var ret = new Date(date || new Date());
   ret.setDate(ret.getDate() + ((day_in_week - 1 - ret.getDay() + 7) % 7) + 1);
   return ret;
@@ -153,7 +153,7 @@ const createEventStrings = (termBeginandEnd, event, index) => {
       var BeginningOfEvent = convertTo24Hour(proccesedTime[0]);
       var EndOfEvent = convertTo24Hour(proccesedTime[1]);
 
-      console.log(event["dayTimeNumber"], index);
+      //console.log(event["dayTimeNumber"], index);
       var nextDay = nextWeekdayDate(
         new Date(
           termBeginandEnd[0]
@@ -306,6 +306,7 @@ const tableScraper = (event, elements, i, j, sch, tabType) => {
 
       for (var k = 0; k < table.length; k++) {
         var day = table[k].children[0].innerHTML.replace(/\&nbsp;/g, "").trim();
+
         var time = table[k].children[1].innerHTML.trim();
         var classNumber = table[k].children[2].innerHTML.trim();
         event["dayTimeNumber"].push([day, time, classNumber]);
@@ -356,6 +357,16 @@ const tableScraper = (event, elements, i, j, sch, tabType) => {
 
       for (var k = 0; k < table.length; k++) {
         var day = table[k].children[0].innerHTML.replace(/\&nbsp;/g, "").trim();
+        //There are two days
+        if (day.split("  ").length > 1) {
+          day.split("  ").forEach((day) => {
+            var time = table[k].children[1].innerHTML.trim();
+            var classNumber = table[k].children[2].innerHTML.trim();
+            event["dayTimeNumber"].push([day, time, classNumber]);
+          });
+          continue;
+        }
+
         var time = table[k].children[1].innerHTML.trim();
         var classNumber = table[k].children[2].innerHTML.trim();
         event["dayTimeNumber"].push([day, time, classNumber]);
