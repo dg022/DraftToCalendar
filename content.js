@@ -27,20 +27,20 @@ const reoccurenceStrings = new Object();
 reoccurenceStrings["A"] = ["07-September-2021", "20211209T070000Z"];
 
 //0.5 course offered in second term
-reoccurenceStrings["B"] = ["02-January-2022", "20220401T060000Z"];
+reoccurenceStrings["B"] = ["02-January-2022", "20220402T060000Z"];
 
 //1.0 course
-reoccurenceStrings["E"] = ["07-September-2021", "20220401T060000Z"];
+reoccurenceStrings["E"] = ["07-September-2021", "20220402T060000Z"];
 
 //0.5  essay course offered in first term
 reoccurenceStrings["F"] = ["07-September-2021", "20211209T070000Z"];
 
 //0.5 essatcourse offered in second term
-reoccurenceStrings["G"] = ["02-January-2022", "20220401T060000Z"];
+reoccurenceStrings["G"] = ["02-January-2022", "20220402T060000Z"];
 
 //Q
 // Runs From: 13-September-2021 To: 25-October-2021
-reoccurenceStrings["Q"] = ["12-September-2021", "20211025T060000Z"];
+reoccurenceStrings["Q"] = ["12-September-2021", "20211026T060000Z"];
 
 //R
 //Runs From: 26-October-2021 To: 08-December-2021
@@ -48,23 +48,23 @@ reoccurenceStrings["R"] = ["25-October-2021", "20211209T070000Z"];
 
 //S
 //Runs From: 03-January-2022 To: 11-February-2022
-reoccurenceStrings["S"] = ["02-January-2022", "20220211T070000Z"];
+reoccurenceStrings["S"] = ["02-January-2022", "20220212T070000Z"];
 
 //T
 // From: 14-February-2022 To: 01-April-2022
-reoccurenceStrings["T"] = ["13-February-2022", "20220401T060000Z"];
+reoccurenceStrings["T"] = ["13-February-2022", "20220402T060000Z"];
 
 //U
 //rom: 03-January-2022 To: 01-April-2022
-reoccurenceStrings["U"] = ["02-January-2022", "20220401T060000Z"];
+reoccurenceStrings["U"] = ["02-January-2022", "20220402T060000Z"];
 
-reoccurenceStrings["X"] = ["02-January-2022", "20220401T060000Z"];
+reoccurenceStrings["X"] = ["02-January-2022", "20220402T060000Z"];
 
 reoccurenceStrings["W"] = ["07-September-2021", "20211209T070000Z"];
 
-reoccurenceStrings["Y"] = ["07-September-2021", "20220401T060000Z"];
+reoccurenceStrings["Y"] = ["07-September-2021", "20220402T060000Z"];
 
-reoccurenceStrings["Z"] = ["07-September-2021", "20220401T060000Z"];
+reoccurenceStrings["Z"] = ["07-September-2021", "20220402T060000Z"];
 
 const returnDateAndReoccurence = (letter) => {
   if (letter in reoccurenceStrings) {
