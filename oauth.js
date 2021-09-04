@@ -10,8 +10,13 @@ window.onload = function () {
     }
   }
   chrome.tabs.query(query, callback);
-
+  //inline-block
   document.querySelector("button").addEventListener("click", function () {
+    //button should dissipear and then the loader come
+    document.querySelector("button").style.display = "none";
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("message").innerHTML =
+      "Scrapping your calendar, one momment please!";
     chrome.tabs.query(
       { currentWindow: true, active: true },
       function (tabArray) {
@@ -21,7 +26,9 @@ window.onload = function () {
   });
 
   const createcalendar = (events) => {
+    console.log("we have atleast reached to this point");
     chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      console.log(token, "this was atleasy hit");
       let init = {
         method: "POST",
         async: true,
@@ -48,10 +55,12 @@ window.onload = function () {
             document.getElementById("message").innerHTML =
               "I ran out of google api requests OR you've made too many calenders too quickly! Come back in a bit!";
             document.getElementById("message").style.color = "red";
+            document.getElementById("loader").style.display = "none";
           } else if (response.status !== 200) {
             document.getElementById("message").innerHTML =
               "Unknown error has occured, please refresh page and try again.";
             document.getElementById("message").style.color = "red";
+            document.getElementById("loader").style.display = "none";
           }
           return response.json();
         })
@@ -94,6 +103,7 @@ window.onload = function () {
         "Empty calendar / Can't find any schedule data! Make sure you're on a tab with schedule data!";
       document.getElementById("message").style.color = "red";
       deletecalendar(id);
+      document.getElementById("loader").style.display = "none";
     } else {
       events.forEach((e) => {
         chrome.identity.getAuthToken({ interactive: true }, function (token) {
@@ -135,15 +145,18 @@ window.onload = function () {
         document.getElementById("message").innerHTML = responseError;
         document.getElementById("message").style.color = "red";
         deletecalendar(id);
+        document.getElementById("loader").style.display = "none";
       } else if (wasError) {
         document.getElementById("message").innerHTML =
           "There was an error adding the events to your calendar";
         document.getElementById("message").style.color = "red";
         deletecalendar(id);
+        document.getElementById("loader").style.display = "none";
       } else {
         document.getElementById("message").innerHTML =
           "calendar sucessfully added :)";
         document.getElementById("message").style.color = "green";
+        document.getElementById("loader").style.display = "none";
       }
     }
   };
