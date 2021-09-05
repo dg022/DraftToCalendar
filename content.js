@@ -1,5 +1,16 @@
 chrome.runtime.onMessage.addListener((msgObj) => {
+  if (window.navigator.userAgent.indexOf("Edg/") > -1) {
+    chrome.runtime.sendMessage(
+      {
+        data: "edge",
+      },
+      function (response) {
+        console.log(response);
+      }
+    );
+  }
   var sch = scrapePage();
+
   chrome.runtime.sendMessage(
     {
       data: sch,

@@ -2,6 +2,7 @@ window.onload = function () {
   var query = { active: true, currentWindow: true };
   function callback(tabs) {
     var currentTab = tabs[0];
+
     if (!currentTab.url.includes("https://draftmyschedule.uwo.ca/secure/")) {
       document.getElementById("but").disabled = true;
       document.getElementById("but").style["background-color"] = "#cccccc";
@@ -26,50 +27,58 @@ window.onload = function () {
   });
 
   const createcalendar = (events) => {
-    console.log("we have atleast reached to this point");
-    chrome.identity.getAuthToken({ interactive: true }, function (token) {
-      console.log(token, "this was atleasy hit");
-      let init = {
-        method: "POST",
-        async: true,
-        headers: {
-          Authorization: "Bearer " + token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          summary: "2021-2022 Academic Year",
-        }),
-        contentType: "json",
-      };
-      fetch("https://www.googleapis.com/calendar/v3/calendars", init)
-        .then((response) => {
-          console.log(response);
-          if (response.status == 401) {
-            chrome.identity.removeCachedAuthToken(
-              { token: token },
-              function () {
-                createcalendar(events);
-              }
-            );
-          } else if (response.status == 403) {
-            document.getElementById("message").innerHTML =
-              "I ran out of google api requests OR you've made too many calenders too quickly! Come back in a bit!";
-            document.getElementById("message").style.color = "red";
-            document.getElementById("loader").style.display = "none";
-          } else if (response.status !== 200) {
-            document.getElementById("message").innerHTML =
-              "Unknown error has occured, please refresh page and try again.";
-            document.getElementById("message").style.color = "red";
-            document.getElementById("loader").style.display = "none";
-          }
-          return response.json();
-        })
-        .then(function (data) {
-          if (data.id !== undefined) {
-            sendEvents(events, data.id);
-          }
-        });
-    });
+    if (events === "edge") {
+      document.getElementById("message").innerHTML =
+        "Sorry! DraftToCalendar is unsupported for Edge";
+      document.getElementById("message").style.color = "red";
+      document.getElementById("loader").style.display = "none";
+    } else {
+      console.log("hey we are here");
+
+      chrome.identity.getAuthToken({ interactive: true }, function (token) {
+        console.log("this happened");
+        let init = {
+          method: "POST",
+          async: true,
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            summary: "2021-2022 Academic Year",
+          }),
+          contentType: "json",
+        };
+        fetch("https://www.googleapis.com/calendar/v3/calendars", init)
+          .then((response) => {
+            console.log(response);
+            if (response.status == 401) {
+              chrome.identity.removeCachedAuthToken(
+                { token: token },
+                function () {
+                  createcalendar(events);
+                }
+              );
+            } else if (response.status == 403) {
+              document.getElementById("message").innerHTML =
+                "I ran out of google api requests OR you've made too many calenders too quickly! Come back in a bit!";
+              document.getElementById("message").style.color = "red";
+              document.getElementById("loader").style.display = "none";
+            } else if (response.status !== 200) {
+              document.getElementById("message").innerHTML =
+                "Unknown error has occured, please refresh page and try again.";
+              document.getElementById("message").style.color = "red";
+              document.getElementById("loader").style.display = "none";
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            if (data.id !== undefined) {
+              sendEvents(events, data.id);
+            }
+          });
+      });
+    }
   };
 
   const deletecalendar = (id) => {
