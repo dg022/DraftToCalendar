@@ -32,9 +32,12 @@ window.onload = function () {
         "Sorry! DraftToCalendar is unsupported for Edge";
       document.getElementById("message").style.color = "red";
       document.getElementById("loader").style.display = "none";
+    } else if (events === "tabError") {
+      document.getElementById("message").innerHTML =
+        'Wrong tab! Go To "MY CURRENT SCHEDULE" tab and try again!';
+      document.getElementById("message").style.color = "red";
+      document.getElementById("loader").style.display = "none";
     } else {
-      console.log("hey we are here");
-
       chrome.identity.getAuthToken({ interactive: true }, function (token) {
         console.log("this happened");
         let init = {

@@ -8,17 +8,32 @@ chrome.runtime.onMessage.addListener((msgObj) => {
         console.log(response);
       }
     );
-  }
-  var sch = scrapePage();
+  } else if (
+    document.getElementsByClassName("navigation")[0] === undefined ||
+    document
+      .getElementsByClassName("navigation")[0]
+      .getElementsByClassName("active")[0].innerText !== "My Current Schedule"
+  ) {
+    chrome.runtime.sendMessage(
+      {
+        data: "tabError",
+      },
+      function (response) {
+        console.log(response);
+      }
+    );
+  } else {
+    var sch = scrapePage();
 
-  chrome.runtime.sendMessage(
-    {
-      data: sch,
-    },
-    function (response) {
-      console.log(response);
-    }
-  );
+    chrome.runtime.sendMessage(
+      {
+        data: sch,
+      },
+      function (response) {
+        console.log(response);
+      }
+    );
+  }
 });
 
 const nextWeekdayDate = (date, day_in_week) => {
@@ -368,9 +383,13 @@ const tableScraper = (event, elements, i, j, sch, tabType) => {
 
       for (var k = 0; k < table.length; k++) {
         var day = table[k].children[0].innerHTML.replace(/\&nbsp;/g, "").trim();
-        //There are two days
-        if (day.split("  ").length > 1) {
-          day.split("  ").forEach((day) => {
+
+        var singleSplitDays = day.split(/\s+/);
+
+        if (singleSplitDays.length > 1) {
+          // split on one space, and then iterate through and remove the spaces left and right from each side.
+
+          singleSplitDays.forEach((day) => {
             var time = table[k].children[1].innerHTML.trim();
             var classNumber = table[k].children[2].innerHTML.trim();
             event["dayTimeNumber"].push([day, time, classNumber]);
