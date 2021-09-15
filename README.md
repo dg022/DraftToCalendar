@@ -1,4 +1,4 @@
-﻿# DraftToGooglecalendar
+﻿# DraftToCalendar
  
  DraftToCalender is a Google Chrome Extension which exports your DraftMySchedule to Google Calendar! 
  
